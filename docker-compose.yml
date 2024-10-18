@@ -5,19 +5,15 @@ services:
     build: .
     image: node-app
     environment:
-      - MONGODB_URL=mongodb+srv://22521145:slowey@mdp.9dkir.mongodb.net/
-      - DOCKER_HOST=tcp://socat:2375
+      - MONGODB_URL=mongodb://mongodb:27017/node-boilerplate
     ports:
       - '3000:3000'
     depends_on:
       - mongodb
-      - socat
     volumes:
       - .:/usr/src/node-app
     networks:
       - node-network
-    links:
-      - socat
 
   mongodb:
     image: mongo:4.2.1-bionic
@@ -25,16 +21,6 @@ services:
       - '27017:27017'
     volumes:
       - dbdata:/data/db
-    networks:
-      - node-network
-
-  socat:
-    image: bpack/socat
-    command: TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    expose:
-      - '2375'
     networks:
       - node-network
 

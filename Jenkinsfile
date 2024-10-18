@@ -3,14 +3,13 @@ pipeline {
 
     tools {
         nodejs 'nodejs'
-        dockerTool 'docker'
     }
 
     environment {
         PORT = '3000'
         JWT_SECRET = 'demojenkins'
         RAILWAY_SERVICE_NAME = 'jenkins-demo'
-        MONGODB_URL = 'mongodb+srv://22521145:slowey@mdp.9dkir.mongodb.net/'
+        MONGODB_URL = "${MONGODB_URL}"
         DOCKER_IMAGE_NAME = 'slowey/jenkins-demo'
     }
 
