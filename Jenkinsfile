@@ -8,7 +8,6 @@ pipeline {
     environment {
         PORT = '3000'
         JWT_SECRET = 'demojenkins'
-        RAILWAY_SERVICE_NAME = 'jenkins-demo'
         MONGODB_URL = "${MONGODB_URL}"
         DOCKER_IMAGE_NAME = 'slowey/jenkins-demo'
     }
@@ -18,14 +17,6 @@ pipeline {
             steps {
                 script {
                     checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-demo', url: 'https://github.com/sloweyyy/jenkins-demo.git']])
-                }
-            }
-        }
-
-        stage('Print docker password') {
-            steps {
-                script {
-                    echo "Docker password: ${env.DOCKER_PASSWORD}"
                 }
             }
         }
