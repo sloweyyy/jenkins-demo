@@ -1,13 +1,17 @@
 pipeline {
     agent any
 
-    tools {nodejs "nodejs"}
+    tools {
+        nodejs 'nodejs'
+        dockerTool 'docker'
+    }
 
     environment {
         PORT = '3000'
         JWT_SECRET = 'demojenkins'
         RAILWAY_SERVICE_NAME = 'jenkins-demo'
         MONGODB_URL = 'mongodb+srv://22521145:slowey@mdp.9dkir.mongodb.net/'
+        DOCKER_IMAGE_NAME = 'slowey/jenkins-demo'
     }
 
     stages {
@@ -15,6 +19,14 @@ pipeline {
             steps {
                 script {
                     checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-demo', url: 'https://github.com/sloweyyy/jenkins-demo.git']])
+                }
+            }
+        }
+
+        stage('Print docker password') {
+            steps {
+                script {
+                    echo "Docker password: ${env.DOCKER_PASSWORD}"
                 }
             }
         }
@@ -43,50 +55,39 @@ pipeline {
             }
         }
 
-        
-        stage('Install Railway') {
+        stage('Check Docker Installation') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'npm install -g @railway/cli'
+                        sh 'docker --version'
                     } else {
-                        bat 'npm install -g @railway/cli'
+                        bat 'docker --version'
                     }
                 }
             }
         }
 
-        stage('Login to Railway') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'railway login'
+                        sh "docker build -t ${DOCKER_IMAGE_NAME} ."
                     } else {
-                        bat 'railway login'
+                        bat "docker build -t ${DOCKER_IMAGE_NAME} ."
                     }
                 }
             }
         }
 
-        stage('Link Railway') {
+        stage('Push Docker Image') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'railway link'
+                        sh "docker login -u slowey -p ${env.DOCKER_PASSWORD}"
+                        sh "docker push ${DOCKER_IMAGE_NAME}"
                     } else {
-                        bat 'railway link'
-                    }
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'railway up --service ${RAILWAY_SERVICE_NAME}'
-                    } else {
-                        bat 'railway up --service ${RAILWAY_SERVICE_NAME}'
+                        bat "docker login -u slowey -p %DOCKER_PASSWORD%"
+                        bat "docker push ${DOCKER_IMAGE_NAME}"
                     }
                 }
             }
