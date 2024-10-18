@@ -6,8 +6,8 @@ pipeline {
     environment {
         PORT = '3000'
         JWT_SECRET = 'demojenkins'
-        RAILWAY_SERVICE_NAME = 'api-gateway'
-
+        RAILWAY_SERVICE_NAME = 'jenkins-demo'
+        MONGODB_URL = 'mongodb+srv://22521145:slowey@mdp.9dkir.mongodb.net/'
     }
 
     stages {
@@ -19,39 +19,13 @@ pipeline {
             }
         }
 
-        stage('Cd into api-gateway') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'cd api-gateway'
-                    } else {
-                        bat 'cd api-gateway'
-                    }
-                }
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'cd api-gateway'
                         sh 'npm install'
                     } else {
-                        // Use batch command for Windows systems
                         bat 'npm install'
-                    }
-                }
-            }
-        }
-
-        stage('Run Application') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh "export PORT=${PORT} && export JWT_SECRET=${JWT_SECRET} && npm start"
-                    } else {
-                        bat "set PORT=${PORT} && set JWT_SECRET=${JWT_SECRET} && npm start"
                     }
                 }
             }
@@ -61,40 +35,15 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'npm test'
+                        sh "export PORT=${PORT} && export JWT_SECRET=${JWT_SECRET} && export MONGODB_URL=${MONGODB_URL} && npm test"
                     } else {
-                        bat 'npm test'
+                        bat "export PORT=${PORT} && export JWT_SECRET=${JWT_SECRET} && export MONGODB_URL=${MONGODB_URL} && npm test"
                     }
                 }
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'docker build -t api-gateway .'
-                    } else {
-                        bat 'docker build -t api-gateway .'
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'docker tag congchungonline-be ${env.GITHUB_ENV.DOCKER_USERNAME}/api-gateway'
-                        sh 'docker push ${env.GITHUB_ENV.DOCKER_USERNAME}/api-gateway'
-                    } else {
-                        bat 'docker tag api-gateway %DOCKER_USERNAME%/api-gateway'
-                        bat 'docker push %DOCKER_USERNAME%/api-gateway'
-                    }
-                }
-            }
-        }
-
+        
         stage('Install Railway') {
             steps {
                 script {
@@ -107,6 +56,30 @@ pipeline {
             }
         }
 
+        stage('Login to Railway') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'railway login'
+                    } else {
+                        bat 'railway login'
+                    }
+                }
+            }
+        }
+
+        stage('Link Railway') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'railway link'
+                    } else {
+                        bat 'railway link'
+                    }
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
                 script {
@@ -114,6 +87,18 @@ pipeline {
                         sh 'railway up --service ${RAILWAY_SERVICE_NAME}'
                     } else {
                         bat 'railway up --service ${RAILWAY_SERVICE_NAME}'
+                    }
+                }
+            }
+        }
+
+        stage('Run Application') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "export PORT=${PORT} && export JWT_SECRET=${JWT_SECRET} && npm start"
+                    } else {
+                        bat "set PORT=${PORT} && set JWT_SECRET=${JWT_SECRET} && npm start"
                     }
                 }
             }
