@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-demo', url: 'https://github.com/sloweyyy/microservice-design-patterns.git']])
+                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'jenkins-demo', url: 'https://github.com/sloweyyy/jenkins-demo.git']])
                 }
             }
         }
